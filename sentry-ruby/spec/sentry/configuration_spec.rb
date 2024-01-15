@@ -271,10 +271,21 @@ RSpec.describe Sentry::Configuration do
     end
   end
 
-  describe "#sending_allowed?" do
+  describe "#event_building_allowed?" do
     it "true when spotlight" do
       subject.spotlight = true
-      expect(subject.sending_allowed?).to eq(true)
+      expect(subject.event_building_allowed?).to eq(true)
+    end
+
+    it "true when sending allowed" do
+      allow(subject).to receive(:sending_allowed?).and_return(true)
+      expect(subject.event_building_allowed?).to eq(true)
+    end
+
+    it "false when no spotlight and sending not allowed" do
+      allow(subject).to receive(:sending_allowed?).and_return(false)
+      subject.spotlight = false
+      expect(subject.event_building_allowed?).to eq(false)
     end
   end
 

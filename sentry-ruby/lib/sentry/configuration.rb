@@ -478,10 +478,14 @@ module Sentry
       @profiles_sample_rate = profiles_sample_rate
     end
 
+    def event_building_allowed?
+      spotlight || sending_allowed?
+    end
+
     def sending_allowed?
       @errors = []
 
-      spotlight || (valid? && capture_in_environment?)
+      valid? && capture_in_environment?
     end
 
     def sample_allowed?
@@ -515,13 +519,13 @@ module Sentry
     def tracing_enabled?
       valid_sampler = !!((valid_sample_rate?(@traces_sample_rate)) || @traces_sampler)
 
-      (@enable_tracing != false) && valid_sampler && sending_allowed?
+      (@enable_tracing != false) && valid_sampler && event_building_allowed?
     end
 
     def profiling_enabled?
       valid_sampler = !!(valid_sample_rate?(@profiles_sample_rate))
 
-      tracing_enabled? && valid_sampler && sending_allowed?
+      tracing_enabled? && valid_sampler && event_building_allowed?
     end
 
     # @return [String, nil]
@@ -547,7 +551,7 @@ module Sentry
 
     # @api private
     def detect_release
-      return unless sending_allowed?
+      return unless event_building_allowed?
 
       @release ||= ReleaseDetector.detect_release(project_root: project_root, running_on_heroku: running_on_heroku?)
 

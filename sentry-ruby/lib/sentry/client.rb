@@ -46,7 +46,7 @@ module Sentry
     # @param hint [Hash] the hint data that'll be passed to `before_send` callback and the scope's event processors.
     # @return [Event, nil]
     def capture_event(event, scope, hint = {})
-      return unless configuration.sending_allowed?
+      return unless configuration.event_building_allowed?
 
       if event.is_a?(ErrorEvent) && !configuration.sample_allowed?
         transport.record_lost_event(:sample_rate, 'event')
@@ -82,7 +82,7 @@ module Sentry
     # @param hint [Hash] the hint data that'll be passed to `before_send` callback and the scope's event processors.
     # @return [Event, nil]
     def event_from_exception(exception, hint = {})
-      return unless @configuration.sending_allowed?
+      return unless @configuration.event_building_allowed?
 
       ignore_exclusions = hint.delete(:ignore_exclusions) { false }
       return if !ignore_exclusions && !@configuration.exception_class_allowed?(exception)
@@ -101,7 +101,7 @@ module Sentry
     # @param hint [Hash] the hint data that'll be passed to `before_send` callback and the scope's event processors.
     # @return [Event]
     def event_from_message(message, hint = {}, backtrace: nil)
-      return unless @configuration.sending_allowed?
+      return unless @configuration.event_building_allowed?
 
       integration_meta = Sentry.integrations[hint[:integration]]
       event = ErrorEvent.new(configuration: configuration, integration_meta: integration_meta, message: message)
@@ -128,7 +128,7 @@ module Sentry
       monitor_config: nil,
       check_in_id: nil
     )
-      return unless configuration.sending_allowed?
+      return unless configuration.event_building_allowed?
 
       CheckInEvent.new(
         configuration: configuration,
@@ -172,8 +172,8 @@ module Sentry
         end
       end
 
-      transport.send_event(event)
-      spotlight_transport&.send_event(event)
+      transport.send_event(event) if configuration.sending_allowed?
+      spotlight_transport.send_event(event) if spotlight_transport
 
       event
     rescue => e

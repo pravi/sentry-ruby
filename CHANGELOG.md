@@ -1,6 +1,13 @@
 ## Unreleased
 
-- Fix warning about default gems on Ruby 3.3.0 ([#2225](https://github.com/getsentry/sentry-ruby/pull/2225))
+### Features
+
+- Fix warning about default gems on Ruby 3.3.0 and add `bigdecimal` as an explicit dependency ([#2225](https://github.com/getsentry/sentry-ruby/pull/2225))
+
+### Bug Fixes
+
+- Make sure ``sending_allowed?`` is respected irrespective of spotlight configuration ([#2231](https://github.com/getsentry/sentry-ruby/pull/2231))
+  - Fixes [#2226](https://github.com/getsentry/sentry-ruby/issues/2226)
 
 ## 5.16.1
 
